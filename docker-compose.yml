@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend2
+    container_name: testing_frontend_tooltrack
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://backend:8080
+
+  backend:
+    build: ./backend
+    container_name: testing_backend_tooltrack
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://database:3306/tooltrack
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=!@#Admin123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  database:
+    image: mysql:latest
+    container_name: testing_database_tooltrack
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=!@#Admin123
+      - MYSQL_DATABASE=tooltrack
+    volumes:
+      - testingtooltrack:/var/lib/mysql
+
+volumes:
+  testingtooltrack:
