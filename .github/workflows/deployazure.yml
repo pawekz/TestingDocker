@@ -18,29 +18,28 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Log in to ACR
-        uses: docker/login-action@v2
-        with:
-          registry: testingdockercr.azurecr.io
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Build and push frontend image
-        run: |
-          docker build -t tooltrackregistry.azurecr.io/frontend-tooltrack:latest ./frontend2
-          docker push tooltrackregistry.azurecr.io/frontend-tooltrack:latest
-
-      - name: Build and push backend image
-        run: |
-          docker build -t tooltrackregistry.azurecr.io/backend-tooltrack:latest ./backend
-          docker push tooltrackregistry.azurecr.io/backend-tooltrack:latest
-
-      - name: Deploy to Azure Container Apps
+      - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
-          acrName: tooltrackregistry
-          containerAppName: tooltrack-app
+          acrName: testingdockerCR
+          containerAppName: tooltrack-frontend-app
           resourceGroup: TestingDockerResourceGroup
           containerAppEnvironment: tooltrack-env
-          dockerfilePath: ./Dockerfile
-          imageToDeploy: tooltrackregistry.azurecr.io/frontend-tooltrack:latest
+          appSourcePath: ./frontend2
+          imageToBuild: testingdockercr.azurecr.io/frontend-tooltrack:${{ github.sha }}
+          imageToDeploy: testingdockercr.azurecr.io/frontend-tooltrack:${{ github.sha }}
+          environmentVariables: |
+            DATABASE_URL=secretref:${{ secrets.DATABASE_URL }}
+
+      - name: Deploy backend to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          acrName: testingdockerCR
+          containerAppName: tooltrack-backend-app
+          resourceGroup: TestingDockerResourceGroup
+          containerAppEnvironment: tooltrack-env
+          appSourcePath: ./backend
+          imageToBuild: testingdockercr.azurecr.io/backend-tooltrack:${{ github.sha }}
+          imageToDeploy: testingdockercr.azurecr.io/backend-tooltrack:${{ github.sha }}
+          environmentVariables: |
+            DATABASE_URL=secretref:${{ secrets.DATABASE_URL }}
