@@ -7,6 +7,6 @@ properties:
     resources:
       cpu: 1
       memory: 2Gi
-    environmentVariables:
-      - name: DATABASE_URL
-        value: ${{ secrets.DATABASE_URL }}
+    #environmentVariables:
+    #  - name: DATABASE_URL
+    #    value: ${{ secrets.DATABASE_URL }}
