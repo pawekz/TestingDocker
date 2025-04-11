@@ -39,6 +39,16 @@ jobs:
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./backend/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./frontend2/containerapp.yaml
 
+      - name: Check if Backend App Exists
+        run: |
+          RESOURCE_EXISTS=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "name" -o tsv || echo "notfound")
+          if [ "$RESOURCE_EXISTS" == "notfound" ]; then
+            az containerapp create --name tooltrack-backend-app --resource-group testingdocker \
+              --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
+              --environment tooltrack-env-sea --location southeastasia
+            else
+            echo "Backend app already exists, skipping creation."
+
       - name: Deploy backend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
