@@ -52,31 +52,28 @@ jobs:
             echo "Backend app already exists, skipping creation."
           fi
 
-      - name: Deploy backend to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          acrName: testingdockercr
-          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
-          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
-          containerAppName: tooltrack-backend-app
-          resourceGroup: testingdocker
-          containerAppEnvironment: tooltrack-env-sea
-          location: southeastasia
-          appSourcePath: ./backend
-          imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
-          yamlConfigPath: ./backend/containerapp.yaml
-        env:
-          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Update Backend Database Connection
+      - name: Deploy backend manually
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            az containerapp update --name tooltrack-backend-app --resource-group testingdocker \
-              --set-env-vars SPRING_DATASOURCE_URL=jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30 \
-              SPRING_DATASOURCE_USERNAME=${{ secrets.SQL_USERNAME }} \
-              SPRING_DATASOURCE_PASSWORD=${{ secrets.SQL_PASSWORD }}
+            # Build and push the container image
+            docker build -t ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} ./backend
+            docker push ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
+
+            # Deploy the container app
+            az containerapp create \
+              --name tooltrack-backend-app \
+              --resource-group testingdocker \
+              --environment tooltrack-env-sea \
+              --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
+              --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
+              --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+              --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+              --target-port 8080 \
+              --ingress external \
+              --env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
+                       SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
+                       SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
 
       - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
