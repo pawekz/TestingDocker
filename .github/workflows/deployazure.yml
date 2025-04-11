@@ -40,10 +40,7 @@ jobs:
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           environmentVariables: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
-          ingress: external
-          targetPort: 80
-          cpu: 1.25
-          memory: 2.5Gi
+          yamlConfigPath: ./backend/containerapp.yaml
 
       - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
@@ -60,9 +57,4 @@ jobs:
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           environmentVariables: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
-          ingress: external
-          targetPort: 80
-          cpu: 1.25
-          memory: 2.5Gi
-          
-
+          yamlConfigPath: ./frontend2/containerapp.yaml
