@@ -1,3 +1,6 @@
+type: Microsoft.App/containerApps
+apiVersion: 2022-03-01
+name: tooltrack-frontend-app
 location: southeastasia
 properties:
   environmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea

@@ -13,6 +13,7 @@ jobs:
       - name: Upgrade Azure CLI
         run: |
           az upgrade --yes
+          az extension add --name containerapp
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,7 +30,6 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # Add this step before your deployment steps
       - name: Prepare Config Files
         run: |
           sed -i "s|#{SUBSCRIPTION_ID}#|${{ secrets.AZURE_SUBSCRIPTION_ID }}|g" ./frontend2/containerapp.yaml
@@ -65,8 +65,6 @@ jobs:
           appSourcePath: ./backend
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
-          environmentVariables: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
           yamlConfigPath: ./backend/containerapp.yaml
         env:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -76,12 +74,9 @@ jobs:
         with:
           inlineScript: |
             az containerapp update --name tooltrack-backend-app --resource-group testingdocker \
-              --set-env-vars "SPRING_DATASOURCE_URL=jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" \
-              "SPRING_DATASOURCE_USERNAME=${{ secrets.SQL_USERNAME }}" \
-              "SPRING_DATASOURCE_PASSWORD=${{ secrets.SQL_PASSWORD }}" \
-              "SPRING_JPA_HIBERNATE_DDL_AUTO=update" \
-              "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.SQLServerDialect" \
-              "SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.microsoft.sqlserver.jdbc.SQLServerDriver"
+              --set-env-vars SPRING_DATASOURCE_URL=jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30 \
+              SPRING_DATASOURCE_USERNAME=${{ secrets.SQL_USERNAME }} \
+              SPRING_DATASOURCE_PASSWORD=${{ secrets.SQL_PASSWORD }}
 
       - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
@@ -104,16 +99,11 @@ jobs:
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            # Get backend URL dynamically
             BACKEND_URL=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "properties.configuration.ingress.fqdn" -o tsv)
-
-            # Update frontend environment variables
+            if [[ -z "$BACKEND_URL" ]]; then
+              echo "Error: Failed to retrieve backend URL."
+              exit 1
+            fi
             az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
-              --set-env-vars "VITE_API_URL=https://$BACKEND_URL"
-
-            # Update frontend ingress port separately using the correct command
-            az containerapp ingress show --name tooltrack-frontend-app --resource-group testingdocker
+              --set-env-vars VITE_API_URL=https://$BACKEND_URL
             az containerapp ingress update --name tooltrack-frontend-app --resource-group testingdocker --target-port 3000
-
-
-          
