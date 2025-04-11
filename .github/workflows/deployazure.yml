@@ -99,11 +99,15 @@ jobs:
         uses: azure/CLI@v2
         with:
           inlineScript: |
+            # Get backend URL
             BACKEND_URL=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "properties.configuration.ingress.fqdn" -o tsv)
             if [[ -z "$BACKEND_URL" ]]; then
               echo "Error: Failed to retrieve backend URL."
               exit 1
             fi
-            az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
-              --set-env-vars VITE_API_URL=https://$BACKEND_URL
-            az containerapp ingress update --name tooltrack-frontend-app --resource-group testingdocker --target-port 3000
+
+            # Update environment variables directly using az rest
+            az rest --method PATCH \
+              --uri "https://management.azure.com/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/testingdocker/providers/Microsoft.App/containerApps/tooltrack-frontend-app?api-version=2022-03-01" \
+              --headers "Content-Type=application/json" \
+              --body "{\"properties\":{\"configuration\":{\"secrets\":[]},\"template\":{\"containers\":[{\"name\":\"frontend-container\",\"env\":[{\"name\":\"VITE_API_URL\",\"value\":\"https://$BACKEND_URL\"}]}]}}}"
