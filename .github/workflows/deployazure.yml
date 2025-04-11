@@ -33,7 +33,8 @@ jobs:
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-frontend-app
           resourceGroup: testingdocker
-          containerAppEnvironment: tooltrack-env
+          containerAppEnvironment: tooltrack-env-sea
+          location: southeastasia
           appSourcePath: ./frontend2
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
@@ -50,7 +51,8 @@ jobs:
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-backend-app
           resourceGroup: testingdocker
-          containerAppEnvironment: tooltrack-env
+          containerAppEnvironment: tooltrack-env-sea
+          location: southeastasia
           appSourcePath: ./backend
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
