@@ -9,7 +9,8 @@ export default defineConfig({
     port: 3000,
     // You can use a wildcard pattern for greater flexibility
     allowedHosts: [
-      '*.southeastasia.azurecontainerapps.io'
+      '*.southeastasia.azurecontainerapps.io',
+      'tooltrack-frontend-app.icyforest-0261feca.southeastasia.azurecontainerapps.io'
     ]
   }
 })

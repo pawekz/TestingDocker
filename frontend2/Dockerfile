@@ -12,11 +12,21 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Set port environment variable
-ENV PORT 3000
+# Build the application
+RUN npm run build
 
-# Expose the port
+# Production stage
+FROM nginx:alpine
+# Copy nginx configuration
+COPY --from=build /app/dist /usr/share/nginx/html
+# Configure nginx to handle SPA routing
+RUN echo 'server { \
+  listen 3000; \
+  location / { \
+    root /usr/share/nginx/html; \
+    try_files $uri $uri/ /index.html; \
+  } \
+}' > /etc/nginx/conf.d/default.conf
+
 EXPOSE 3000
-
-# Start the application
-CMD ["npm", "run", "dev"]
+CMD ["nginx", "-g", "daemon off;"]

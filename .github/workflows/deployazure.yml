@@ -80,7 +80,8 @@ jobs:
             az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
               --set-env-vars "VITE_API_URL=https://$BACKEND_URL"
 
-            # Update frontend ingress port separately
+            # Update frontend ingress port separately using the correct command
+            az containerapp ingress show --name tooltrack-frontend-app --resource-group testingdocker
             az containerapp ingress update --name tooltrack-frontend-app --resource-group testingdocker --target-port 3000
 
 
