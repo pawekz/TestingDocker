@@ -1,24 +1,21 @@
+type: Microsoft.App/containerApps
+apiVersion: 2022-03-01
+name: tooltrack-backend-app
 location: southeastasia
 properties:
-  environmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
+  environmentId: /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
   configuration:
     ingress:
       external: true
       targetPort: 8080
     registries:
-      - server: #{REGISTRY_SERVER}#
-        username: #{REGISTRY_USERNAME}#
-        passwordSecretRef: registryPassword
+      - server: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        passwordSecretRef: REGISTRY_PASSWORD
   template:
     containers:
-      - name: backend-container
-        image: #{CONTAINER_IMAGE}#
-        resources:
-          cpu: 1
-          memory: 2Gi
-    scale:
-      minReplicas: 1
-      maxReplicas: 10
-    secrets:
-      - name: registryPassword
-        value: #{REGISTRY_PASSWORD}#
+      - name: backend
+        image: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
+        env:
+          - name: DATABASE_URL
+            value: ${{ secrets.DATABASE_URL }}
