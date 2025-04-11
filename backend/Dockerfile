@@ -12,8 +12,8 @@ RUN mvn package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Install wget for health check
-RUN apk add --no-cache wget
+# Install debugging tools
+RUN apk add --no-cache wget curl procps busybox-extras net-tools
 
 # Create a non-root user
 RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
@@ -26,6 +26,9 @@ RUN chmod +x startup.sh
 # Configure JVM options
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
 ENV SERVER_PORT=8080
+
+# Print environment variables for debugging (will be executed at container build time)
+RUN echo "Environment variables will be printed at startup"
 
 EXPOSE 8080
 
