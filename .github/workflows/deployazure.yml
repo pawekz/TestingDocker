@@ -25,6 +25,13 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      # Add this step before your deployment steps
+      - name: Prepare Config Files
+        run: |
+          # Replace placeholders with actual values
+          sed -i "s|#{SUBSCRIPTION_ID}#|${{ secrets.AZURE_SUBSCRIPTION_ID }}|g" ./frontend2/containerapp.yaml
+          sed -i "s|#{SUBSCRIPTION_ID}#|${{ secrets.AZURE_SUBSCRIPTION_ID }}|g" ./backend/containerapp.yaml
+
       - name: Deploy backend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:

@@ -1,5 +1,5 @@
 properties:
-  managedEnvironmentId: /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
+  managedEnvironmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
   configuration:
     ingress:
       external: true
