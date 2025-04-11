@@ -40,7 +40,7 @@ jobs:
         with:
           acrName: tooltrackregistry
           containerAppName: tooltrack-app
-          resourceGroup: TooltrackResourceGroup
+          resourceGroup: TestingDockerResourceGroup
           containerAppEnvironment: tooltrack-env
           dockerfilePath: ./Dockerfile
           imageToDeploy: tooltrackregistry.azurecr.io/frontend-tooltrack:latest
