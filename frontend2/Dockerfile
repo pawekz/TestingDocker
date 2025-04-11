@@ -17,8 +17,8 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
-# Copy nginx configuration
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built files from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 # Configure nginx to handle SPA routing
 RUN echo 'server { \
   listen 3000; \
