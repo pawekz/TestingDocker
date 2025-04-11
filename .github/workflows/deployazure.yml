@@ -10,13 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
       - name: Upgrade Azure CLI
         run: |
           az upgrade --yes
           az extension add --name containerapp
-
-      - name: Checkout code
-        uses: actions/checkout@v3
 
       - name: Log in to Azure
         uses: azure/login@v1
@@ -42,67 +45,93 @@ jobs:
           sed -i "s|#{REGISTRY_USERNAME}#|${{ secrets.REGISTRY_USERNAME }}|g" ./frontend2/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./backend/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./frontend2/containerapp.yaml
+          sed -i "s|#{DATABASE_URL}#|jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30|g" ./backend/containerapp.yaml
 
-      - name: Check if Backend App Exists
-        run: |
-          RESOURCE_EXISTS=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "name" -o tsv 2>/dev/null || echo "notfound")
-          if [[ "$RESOURCE_EXISTS" == "notfound" || -z "$RESOURCE_EXISTS" ]]; then
-            echo "Backend app doesn't exist, will be created by the deployment step."
-          else
-            echo "Backend app already exists, skipping creation."
-          fi
+      - name: Build and push backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
 
-      - name: Deploy backend manually
+      - name: Deploy backend to Azure Container Apps
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            # Build and push the container image
-            docker build -t ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} ./backend
-            docker push ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
+            # Check if the app exists
+            RESOURCE_EXISTS=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "name" -o tsv 2>/dev/null || echo "notfound")
+            
+            if [[ "$RESOURCE_EXISTS" == "notfound" || -z "$RESOURCE_EXISTS" ]]; then
+              echo "Creating new backend container app..."
+              # Create the container app
+              az containerapp create \
+                --name tooltrack-backend-app \
+                --resource-group testingdocker \
+                --environment tooltrack-env-sea \
+                --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
+                --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
+                --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+                --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+                --target-port 8080 \
+                --ingress external \
+                --env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
+                         SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
+                         SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
+            else
+              echo "Updating existing backend container app..."
+              # Update the container app
+              az containerapp update \
+                --name tooltrack-backend-app \
+                --resource-group testingdocker \
+                --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
+                --set-env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
+                         SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
+                         SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
+            fi
 
-            # Deploy the container app
-            az containerapp create \
-              --name tooltrack-backend-app \
-              --resource-group testingdocker \
-              --environment tooltrack-env-sea \
-              --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
-              --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
-              --registry-username ${{ secrets.REGISTRY_USERNAME }} \
-              --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
-              --target-port 8080 \
-              --ingress external \
-              --env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
-                       SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
-                       SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend2
+          push: true
+          tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
 
       - name: Deploy frontend to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          acrName: testingdockercr
-          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
-          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
-          containerAppName: tooltrack-frontend-app
-          resourceGroup: testingdocker
-          containerAppEnvironment: tooltrack-env-sea
-          location: southeastasia
-          appSourcePath: ./frontend2
-          imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          yamlConfigPath: ./frontend2/containerapp.yaml
-        env:
-          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Update Frontend Configuration
         uses: azure/CLI@v2
         with:
           inlineScript: |
+            # Get the backend URL
             BACKEND_URL=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "properties.configuration.ingress.fqdn" -o tsv)
             if [[ -z "$BACKEND_URL" ]]; then
               echo "Error: Failed to retrieve backend URL."
               exit 1
             fi
-
-            # Using direct command parameters instead of YAML
-            az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
-              --set-env-vars VITE_API_URL=https://$BACKEND_URL \
-              --no-wait
+            
+            # Check if the frontend app exists
+            RESOURCE_EXISTS=$(az containerapp show --name tooltrack-frontend-app --resource-group testingdocker --query "name" -o tsv 2>/dev/null || echo "notfound")
+            
+            if [[ "$RESOURCE_EXISTS" == "notfound" || -z "$RESOURCE_EXISTS" ]]; then
+              echo "Creating new frontend container app..."
+              # Create the container app
+              az containerapp create \
+                --name tooltrack-frontend-app \
+                --resource-group testingdocker \
+                --environment tooltrack-env-sea \
+                --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }} \
+                --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
+                --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+                --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+                --target-port 3000 \
+                --ingress external \
+                --env-vars VITE_API_URL=https://$BACKEND_URL \
+                         REACT_APP_API_URL=https://$BACKEND_URL
+            else
+              echo "Updating existing frontend container app..."
+              # Update the container app
+              az containerapp update \
+                --name tooltrack-frontend-app \
+                --resource-group testingdocker \
+                --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }} \
+                --set-env-vars VITE_API_URL=https://$BACKEND_URL \
+                         REACT_APP_API_URL=https://$BACKEND_URL
+            fi
