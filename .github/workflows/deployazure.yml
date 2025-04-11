@@ -63,7 +63,7 @@ jobs:
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           environmentVariables: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
-          yamlConfigPath: ./backend/containerapp.yaml
+          #yamlConfigPath: ./backend/containerapp.yaml
         env:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
@@ -92,7 +92,7 @@ jobs:
           appSourcePath: ./frontend2
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          yamlConfigPath: ./frontend2/containerapp.yaml
+          #yamlConfigPath: ./frontend2/containerapp.yaml
         env:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
