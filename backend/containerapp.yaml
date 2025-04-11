@@ -1,0 +1,11 @@
+properties:
+  configuration:
+    ingress:
+      external: true
+      targetPort: 80
+    resources:
+      cpu: 1
+      memory: 2Gi
+    environmentVariables:
+      - name: DATABASE_URL
+        value: ${{ secrets.DATABASE_URL }}
