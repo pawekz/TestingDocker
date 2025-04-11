@@ -22,6 +22,8 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           acrName: testingdockerCR
+          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
+          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-frontend-app
           resourceGroup: TestingDockerResourceGroup
           containerAppEnvironment: tooltrack-env
@@ -35,6 +37,8 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           acrName: testingdockerCR
+          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
+          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-backend-app
           resourceGroup: TestingDockerResourceGroup
           containerAppEnvironment: tooltrack-env
