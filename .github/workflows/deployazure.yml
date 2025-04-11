@@ -25,24 +25,6 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Deploy frontend to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          acrName: testingdockercr
-          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
-          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
-          containerAppName: tooltrack-frontend-app
-          resourceGroup: testingdocker
-          containerAppEnvironment: tooltrack-env-sea
-          location: southeastasia
-          appSourcePath: ./frontend2
-          imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          environmentVariables: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-          ingress: external
-          targetPort: 80
-
       - name: Deploy backend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
@@ -60,3 +42,27 @@ jobs:
             DATABASE_URL=${{ secrets.DATABASE_URL }}
           ingress: external
           targetPort: 80
+          cpu: 1.25
+          memory: 2.5Gi
+
+      - name: Deploy frontend to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          acrName: testingdockercr
+          acrUsername: ${{ secrets.REGISTRY_USERNAME }}
+          acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
+          containerAppName: tooltrack-frontend-app
+          resourceGroup: testingdocker
+          containerAppEnvironment: tooltrack-env-sea
+          location: southeastasia
+          appSourcePath: ./frontend2
+          imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
+          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
+          environmentVariables: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+          ingress: external
+          targetPort: 80
+          cpu: 1.25
+          memory: 2.5Gi
+          
+
