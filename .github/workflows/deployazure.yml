@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Upgrade Azure CLI
+        run: |
+          az upgrade --yes
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -42,10 +46,12 @@ jobs:
       - name: Check if Backend App Exists
         run: |
           RESOURCE_EXISTS=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "name" -o tsv 2>/dev/null || echo "notfound")
-          if [ "$RESOURCE_EXISTS" == "notfound" ]; then
-            echo "Backend app doesn't exist, will be created by the deployment step."
+
+        # Check if the return value is valid
+          if [[ "$RESOURCE_EXISTS" == "notfound" || -z "$RESOURCE_EXISTS" ]]; then
+          echo "Backend app doesn't exist, will be created by the deployment step."
           else
-            echo "Backend app already exists, skipping creation."
+          echo "Backend app already exists, skipping creation."
           fi
 
       - name: Deploy backend to Azure Container Apps
