@@ -68,7 +68,7 @@ jobs:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Update Backend Database Connection
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             az containerapp update --name tooltrack-backend-app --resource-group testingdocker \
@@ -97,7 +97,7 @@ jobs:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Update Frontend Configuration
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
           inlineScript: |
             # Get backend URL dynamically
