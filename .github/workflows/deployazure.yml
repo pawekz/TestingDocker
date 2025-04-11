@@ -28,7 +28,7 @@ jobs:
       - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
-          acrName: testingdockerCR
+          acrName: testingdockercr
           acrUsername: ${{ secrets.REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-frontend-app
@@ -45,7 +45,7 @@ jobs:
       - name: Deploy backend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
-          acrName: testingdockerCR
+          acrName: testingdockercr
           acrUsername: ${{ secrets.REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-backend-app
