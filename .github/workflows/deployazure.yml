@@ -32,13 +32,13 @@ jobs:
           acrUsername: ${{ secrets.REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-frontend-app
-          resourceGroup: TestingDockerResourceGroup
+          resourceGroup: testingdocker
           containerAppEnvironment: tooltrack-env
           appSourcePath: ./frontend2
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           environmentVariables: |
-            DATABASE_URL=secretref:DATABASE_URL
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
           ingress: external
           targetPort: 80
 
@@ -49,12 +49,12 @@ jobs:
           acrUsername: ${{ secrets.REGISTRY_USERNAME }}
           acrPassword: ${{ secrets.REGISTRY_PASSWORD }}
           containerAppName: tooltrack-backend-app
-          resourceGroup: TestingDockerResourceGroup
+          resourceGroup: testingdocker
           containerAppEnvironment: tooltrack-env
           appSourcePath: ./backend
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}
           environmentVariables: |
-            DATABASE_URL=secretref:DATABASE_URL
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
           ingress: external
           targetPort: 80
