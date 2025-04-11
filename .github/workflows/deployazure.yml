@@ -45,7 +45,9 @@ jobs:
           sed -i "s|#{REGISTRY_USERNAME}#|${{ secrets.REGISTRY_USERNAME }}|g" ./frontend2/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./backend/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./frontend2/containerapp.yaml
-          sed -i "s|#{DATABASE_URL}#|jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30|g" ./backend/containerapp.yaml
+          sed -i "s|#{DATABASE_URL}#|${{ secrets.DATABASE_URL }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{SQL_USERNAME}#|${{ secrets.SQL_USERNAME }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{SQL_PASSWORD}#|${{ secrets.SQL_PASSWORD }}|g" ./backend/containerapp.yaml
 
       - name: Build and push backend image
         uses: docker/build-push-action@v4
@@ -62,21 +64,11 @@ jobs:
             RESOURCE_EXISTS=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "name" -o tsv 2>/dev/null || echo "notfound")
             
             if [[ "$RESOURCE_EXISTS" == "notfound" || -z "$RESOURCE_EXISTS" ]]; then
-              echo "Creating new backend container app..."
-              # Create the container app
+              echo "Creating new backend container app using YAML..."
+              # Create the container app using the YAML file
               az containerapp create \
-                --name tooltrack-backend-app \
                 --resource-group testingdocker \
-                --environment tooltrack-env-sea \
-                --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
-                --registry-server ${{ secrets.AZURE_CONTAINER_REGISTRY }} \
-                --registry-username ${{ secrets.REGISTRY_USERNAME }} \
-                --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
-                --target-port 8080 \
-                --ingress external \
-                --env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
-                         SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
-                         SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
+                --yaml ./backend/containerapp.yaml
             else
               echo "Updating existing backend container app..."
               # Update the container app
@@ -84,7 +76,7 @@ jobs:
                 --name tooltrack-backend-app \
                 --resource-group testingdocker \
                 --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
-                --set-env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
+                --set-env-vars SPRING_DATASOURCE_URL='${{ secrets.DATABASE_URL }}' \
                          SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
                          SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
             fi

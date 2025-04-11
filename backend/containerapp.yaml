@@ -17,8 +17,12 @@ properties:
       - name: backend
         image: #{CONTAINER_IMAGE}#
         env:
-          - name: DATABASE_URL
+          - name: SPRING_DATASOURCE_URL
             value: #{DATABASE_URL}#
+          - name: SPRING_DATASOURCE_USERNAME
+            value: #{SQL_USERNAME}#
+          - name: SPRING_DATASOURCE_PASSWORD
+            value: #{SQL_PASSWORD}#
     secrets:
       - name: registryPassword
         value: #{REGISTRY_PASSWORD}#
