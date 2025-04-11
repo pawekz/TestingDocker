@@ -32,6 +32,12 @@ jobs:
           sed -i "s|#{SUBSCRIPTION_ID}#|${{ secrets.AZURE_SUBSCRIPTION_ID }}|g" ./backend/containerapp.yaml
           sed -i "s|#{CONTAINER_IMAGE}#|${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }}|g" ./backend/containerapp.yaml
           sed -i "s|#{CONTAINER_IMAGE}#|${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}|g" ./frontend2/containerapp.yaml
+          sed -i "s|#{REGISTRY_SERVER}#|${{ secrets.AZURE_CONTAINER_REGISTRY }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{REGISTRY_SERVER}#|${{ secrets.AZURE_CONTAINER_REGISTRY }}|g" ./frontend2/containerapp.yaml
+          sed -i "s|#{REGISTRY_USERNAME}#|${{ secrets.REGISTRY_USERNAME }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{REGISTRY_USERNAME}#|${{ secrets.REGISTRY_USERNAME }}|g" ./frontend2/containerapp.yaml
+          sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./frontend2/containerapp.yaml
 
       - name: Deploy backend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1

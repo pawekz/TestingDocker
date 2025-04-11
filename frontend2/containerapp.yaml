@@ -1,15 +1,24 @@
-type: Microsoft.App/containerApps
-name: tooltrack-frontend-app
+location: southeastasia
 properties:
-  managedEnvironmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
+  environmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
   configuration:
     ingress:
       external: true
       targetPort: 3000
-    resources:
-      cpu: 1
-      memory: 2Gi
+    registries:
+      - server: #{REGISTRY_SERVER}#
+        username: #{REGISTRY_USERNAME}#
+        passwordSecretRef: registryPassword
   template:
     containers:
       - name: frontend-container
         image: #{CONTAINER_IMAGE}#
+        resources:
+          cpu: 1
+          memory: 2Gi
+    scale:
+      minReplicas: 1
+      maxReplicas: 10
+    secrets:
+      - name: registryPassword
+        value: #{REGISTRY_PASSWORD}#
