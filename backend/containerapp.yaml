@@ -18,7 +18,7 @@ properties:
         image: #{CONTAINER_IMAGE}#
         env:
           - name: SPRING_DATASOURCE_URL
-            value: "jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30"
+            value: "jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30"
           - name: SPRING_DATASOURCE_USERNAME
             value: "#{SQL_USERNAME}#"
           - name: SPRING_DATASOURCE_PASSWORD

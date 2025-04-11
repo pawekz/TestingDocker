@@ -10,7 +10,7 @@ echo "JAVA_OPTS=${JAVA_OPTS}"
 echo "SERVER_PORT=${SERVER_PORT}"
 
 # Export environment variables explicitly
-export SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30}"
+export SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30}"
 export SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}"
 export SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
 

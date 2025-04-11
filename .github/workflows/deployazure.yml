@@ -45,7 +45,7 @@ jobs:
           sed -i "s|#{REGISTRY_USERNAME}#|${{ secrets.REGISTRY_USERNAME }}|g" ./frontend2/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./backend/containerapp.yaml
           sed -i "s|#{REGISTRY_PASSWORD}#|${{ secrets.REGISTRY_PASSWORD }}|g" ./frontend2/containerapp.yaml
-          sed -i "s|#{DATABASE_URL}#|${{ secrets.DATABASE_URL }}|g" ./backend/containerapp.yaml
+          sed -i "s|#{DATABASE_URL}#|jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30|g" ./backend/containerapp.yaml
           sed -i "s|#{SQL_USERNAME}#|${{ secrets.SQL_USERNAME }}|g" ./backend/containerapp.yaml
           sed -i "s|#{SQL_PASSWORD}#|${{ secrets.SQL_PASSWORD }}|g" ./backend/containerapp.yaml
 
@@ -76,7 +76,7 @@ jobs:
                 --name tooltrack-backend-app \
                 --resource-group testingdocker \
                 --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
-                --set-env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
+                --set-env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
                          SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
                          SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'
             fi

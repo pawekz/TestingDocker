@@ -30,6 +30,12 @@ public class DataSourceConfig {
         System.out.println("Username is set: " + (username != null && !username.isEmpty()));
         System.out.println("Password is set: " + (password != null && !password.isEmpty()));
         
+        // Ensure we have a valid URL
+        if (url == null || url.contains("${SPRING_DATASOURCE_URL}")) {
+            url = "jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30";
+            System.out.println("URL was invalid, using default: " + maskSensitiveInfo(url));
+        }
+        
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(url);
         dataSource.setUsername(username);
