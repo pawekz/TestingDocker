@@ -21,7 +21,7 @@ jobs:
       - name: Log in to ACR
         uses: docker/login-action@v2
         with:
-          registry: tooltrackregistry.azurecr.io
+          registry: testingdockercr.azurecr.io
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
