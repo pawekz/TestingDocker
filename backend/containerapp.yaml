@@ -2,7 +2,7 @@ properties:
   configuration:
     ingress:
       external: true
-      targetPort: 80
+      targetPort: 8080
     resources:
       cpu: 1
       memory: 2Gi

@@ -8,10 +8,13 @@ function App() {
     const [message, setMessage] = useState('')
     const [users, setUsers] = useState([])
     const [newUser, setNewUser] = useState({ firstname: '', lastname: '', age: '' })
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// Then replace all fetch calls with ${apiUrl} instead of http://localhost:8080
+
 
     useEffect(() => {
         // Fetch hello message
-        fetch('http://localhost:8080/hello')
+        fetch(`${apiUrl}/hello`)
             .then(response => response.json())
             .then(data => setMessage(data.message))
             .catch(error => console.error('Error fetching hello:', error))
@@ -21,7 +24,7 @@ function App() {
     }, [])
 
     const fetchUsers = () => {
-        fetch('http://localhost:8080/users')
+        fetch(`${apiUrl}/users`)
             .then(response => response.json())
             .then(data => setUsers(data))
             .catch(error => console.error('Error fetching users:', error))
@@ -29,7 +32,7 @@ function App() {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        fetch('http://localhost:8080/users', {
+        fetch(`${apiUrl}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

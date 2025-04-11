@@ -42,6 +42,18 @@ jobs:
             DATABASE_URL=${{ secrets.DATABASE_URL }}
           yamlConfigPath: ./backend/containerapp.yaml
 
+      - name: Update Backend Database Connection
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update --name tooltrack-backend-app --resource-group testingdocker \
+              --set-env-vars "SPRING_DATASOURCE_URL=jdbc:sqlserver://testingdockerserver.database.windows.net:1433;databaseName=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;" \
+              "SPRING_DATASOURCE_USERNAME=${{ secrets.SQL_USERNAME }}" \
+              "SPRING_DATASOURCE_PASSWORD=${{ secrets.SQL_PASSWORD }}" \
+              "SPRING_JPA_HIBERNATE_DDL_AUTO=update" \
+              "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.SQLServerDialect" \
+              "SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.microsoft.sqlserver.jdbc.SQLServerDriver"
+
       - name: Deploy frontend to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:
@@ -55,9 +67,19 @@ jobs:
           appSourcePath: ./frontend2
           imageToBuild: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/frontend-tooltrack:${{ github.sha }}
-          environmentVariables: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
           yamlConfigPath: ./frontend2/containerapp.yaml
+
+      - name: Update Frontend Configuration
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            # Get backend URL dynamically
+            BACKEND_URL=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "properties.configuration.ingress.fqdn" -o tsv)
+
+            # Update frontend port and API URL in one command
+            az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
+              --set-env-vars "VITE_API_URL=https://$BACKEND_URL" \
+              --ingress external --target-port 3000
 
 
           
