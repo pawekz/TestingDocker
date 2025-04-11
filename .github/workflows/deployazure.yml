@@ -58,3 +58,6 @@ jobs:
           environmentVariables: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
           yamlConfigPath: ./frontend2/containerapp.yaml
+
+
+          
