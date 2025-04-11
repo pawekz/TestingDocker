@@ -1,3 +1,5 @@
+type: Microsoft.App/containerApps
+name: tooltrack-frontend-app
 properties:
   managedEnvironmentId: /subscriptions/#{SUBSCRIPTION_ID}#/resourceGroups/testingdocker/providers/Microsoft.App/managedEnvironments/tooltrack-env-sea
   configuration:
@@ -7,3 +9,7 @@ properties:
     resources:
       cpu: 1
       memory: 2Gi
+  template:
+    containers:
+      - name: frontend-container
+        image: #{CONTAINER_IMAGE}#
