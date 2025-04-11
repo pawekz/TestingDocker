@@ -76,10 +76,12 @@ jobs:
             # Get backend URL dynamically
             BACKEND_URL=$(az containerapp show --name tooltrack-backend-app --resource-group testingdocker --query "properties.configuration.ingress.fqdn" -o tsv)
 
-            # Update frontend port and API URL in one command
+            # Update frontend environment variables
             az containerapp update --name tooltrack-frontend-app --resource-group testingdocker \
-              --set-env-vars "VITE_API_URL=https://$BACKEND_URL" \
-              --ingress external --target-port 3000
+              --set-env-vars "VITE_API_URL=https://$BACKEND_URL"
+
+            # Update frontend ingress port separately
+            az containerapp ingress update --name tooltrack-frontend-app --resource-group testingdocker --target-port 3000
 
 
           
