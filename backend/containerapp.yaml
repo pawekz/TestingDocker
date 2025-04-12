@@ -8,8 +8,6 @@ properties:
     ingress:
       external: true
       targetPort: 8080
-      port: 8080
-      port: 8080
     registries:
       - server: #{REGISTRY_SERVER}#
         username: #{REGISTRY_USERNAME}#

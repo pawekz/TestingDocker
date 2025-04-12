@@ -68,9 +68,7 @@ jobs:
               # Create the container app using the YAML file
               az containerapp create \
                 --resource-group testingdocker \
-                --yaml ./backend/containerapp.yaml \
-                --target-port 8080 \
-                --ingress external
+                --yaml ./backend/containerapp.yaml
             else
               echo "Updating existing backend container app..."
               # Update the container app
@@ -78,7 +76,6 @@ jobs:
                 --name tooltrack-backend-app \
                 --resource-group testingdocker \
                 --image ${{ secrets.AZURE_CONTAINER_REGISTRY }}/backend-tooltrack:${{ github.sha }} \
-                --target-port 8080 \
                 --set-env-vars SPRING_DATASOURCE_URL='jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30' \
                          SPRING_DATASOURCE_USERNAME='${{ secrets.SQL_USERNAME }}' \
                          SPRING_DATASOURCE_PASSWORD='${{ secrets.SQL_PASSWORD }}'

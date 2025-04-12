@@ -10,15 +10,7 @@ echo "JAVA_OPTS=${JAVA_OPTS}"
 echo "SERVER_PORT=${SERVER_PORT}"
 
 # Export environment variables explicitly
-# Ensure the URL has the proper format
-if [ -z "$SPRING_DATASOURCE_URL" ]; then
-    export SPRING_DATASOURCE_URL="jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30"
-elif [[ "$SPRING_DATASOURCE_URL" != jdbc:* ]]; then
-    # If URL doesn't start with jdbc:, assume it's just the server name and add the proper prefix and parameters
-    export SPRING_DATASOURCE_URL="jdbc:sqlserver://${SPRING_DATASOURCE_URL};database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30"
-    echo "Modified SPRING_DATASOURCE_URL to ensure proper format"
-fi
-
+export SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30}"
 export SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}"
 export SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
 
