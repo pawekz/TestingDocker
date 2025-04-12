@@ -1,4 +1,4 @@
-package com.testing.Backend.config;
+package com.testing.backend.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +31,24 @@ public class DataSourceConfig {
         System.out.println("Password is set: " + (password != null && !password.isEmpty()));
         
         // Ensure we have a valid URL
-        if (url == null || url.contains("${SPRING_DATASOURCE_URL}")) {
+        if (url == null || url.isEmpty() || url.contains("${SPRING_DATASOURCE_URL}")) {
             url = "jdbc:sqlserver://testingdockerserver.database.windows.net:1433;database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30";
             System.out.println("URL was invalid, using default: " + maskSensitiveInfo(url));
         }
+        
+        // Check if URL starts with jdbc: prefix
+        if (!url.startsWith("jdbc:")) {
+            System.out.println("URL does not start with jdbc: prefix, adding it");
+            url = "jdbc:sqlserver://" + url;
+        }
+        
+        // Ensure URL is properly formatted for SQL Server
+        if (url.startsWith("jdbc:sqlserver://") && !url.contains(";database=")) {
+            System.out.println("URL is missing database parameter, adding it");
+            url = url + ";database=testingdockerdb;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30";
+        }
+        
+        System.out.println("Final JDBC URL: " + maskSensitiveInfo(url));
         
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(url);

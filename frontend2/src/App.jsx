@@ -71,6 +71,9 @@ function App() {
             <div className="card">
                 <h2>Backend Message: {message}</h2>
             </div>
+            <div className="card">
+                <h2>Test CI/CD Message: {message}</h2>
+            </div>
 
             {/* Add user form */}
             <div className="card">
